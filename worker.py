@@ -59,7 +59,8 @@ def gmail_login():
     return build('gmail', 'v1', credentials=creds)
 
 def build_mail(to, subject, body, attachments=[]):
-    sender = f"QTurkey <{os.environ["EMAIL_ADDRESS"]}>"
+    addr = os.environ['EMAIL_ADDRESS']
+    sender = f"QTurkey <{addr}>"
 
     mail = MIMEMultipart()
     mail['to'] = to
@@ -174,6 +175,9 @@ def get_mail_information(client, mail_id):
             body = get_mail_body(part)
         elif part['mimeType'] == "multipart/alternative":
             body = get_mail_body_multipart(part)
+        elif part['mimeType'] == "text/plain":
+            # Do nothing for the plain text preview
+            pass
         else:
             print("Handling attachment")
             attachment = get_attachment(client, part=part, mail_id=mail_id)
@@ -334,8 +338,8 @@ if __name__ == "__main__":
     build_authorized_senders()
     pool = SQLitePool(factory=sqlite3.connect, capacity=5, database="mailer.db")
     # run_scheduled_job(pool)
-    # schedule.every().minute.do(create_job_from_gmail, pool)
-    # schedule.every().minute.do(run_scheduled_job, pool)
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    schedule.every().minute.do(create_job_from_gmail, pool)
+    schedule.every().minute.do(run_scheduled_job, pool)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
