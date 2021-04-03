@@ -1,0 +1,4 @@
+*.db
+*_tester.py
+.env
+ec2-mailer-service.json
